@@ -1,0 +1,22 @@
+{
+  "extends": "./.eslintrc.json",
+  "rules": {
+    "indent": ["warn", 2],
+    "semi": ["warn", "always"],
+    "quotes": ["warn", "single"],
+    "comma-dangle": [
+      "warn",
+      {
+        "arrays": "always-multiline",
+        "objects": "always-multiline",
+        "imports": "always-multiline",
+        "exports": "always-multiline",
+        "functions": "never"
+      }
+    ],
+    "object-curly-spacing": ["warn", "always"],
+    "react/jsx-closing-bracket-location": [1, "line-aligned"],
+    "arrow-parens": ["warn", "always"],
+    "linebreak-style": 0
+  }
+}

@@ -2,6 +2,10 @@
  * This file is the entry point for your bot.
  */
 
-import RenderService from 'yare-code-sync/client/RenderService'
+import { GameState } from './game-state';
 
-RenderService.circle(my_spirits[0], 100);
+//import RenderService from 'yare-code-sync/client/RenderService'
+//RenderService.circle(my_spirits[0], 100);
+
+// gamestate converts the game data into a more workable dataset
+new GameState();

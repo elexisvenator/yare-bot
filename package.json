@@ -13,7 +13,7 @@
 		"serve:base": "bash -c 'cd node_modules/yare-code-sync; nvm i; npm i; npx grunt'",
 		"serve": "env CUSTOM_CODE_PATH=../../dist/bot.js yarn serve:base",
 		"serve:min": "env CUSTOM_CODE_PATH=../../dist/bot.min.js yarn serve:base",
-		"watch": "bash -c 'yarn build --watch & watchPid=\"$!\" ; yarn serve ; kill ${watchPid}'",
+		"watch": "bash -c 'yarn build --watch",
 		"watch:min": "bash -c 'yarn build:min --watch & watchPid=\"$!\" ; yarn serve:min ; kill ${watchPid}'"
 	},
 	"devDependencies": {

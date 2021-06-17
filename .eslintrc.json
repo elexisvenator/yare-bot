@@ -1,0 +1,107 @@
+{
+  "env": {
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "eslint:recommended",
+    "plugin:react/recommended"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "plugins": [
+    "@typescript-eslint",
+    "react",
+    "react-hooks"
+  ],
+  "rules": {
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "parser": "@typescript-eslint/parser",
+      "parserOptions": {
+        "ecmaVersion": 2020,
+        "sourceType": "module",
+        "ecmaFeatures": {
+          "tsx": true
+        }
+      },
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-array-constructor": "off",
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/no-empty-interface": "off",
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-extra-non-null-assertion": "off",
+        "@typescript-eslint/no-extra-semi": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/no-misused-new": "off",
+        "@typescript-eslint/no-namespace": "off",
+        "@typescript-eslint/no-non-null-assertion": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "@typescript-eslint/prefer-namespace-keyword": "off",
+        "constructor-super": "off",
+        "for-direction": "off",
+        "getter-return": "off",
+        "no-async-promise-executor": "off",
+        "no-class-assign": "off",
+        "no-console": ["error", { "allow": ["warn", "error"] }],
+        "no-compare-neg-zero": "off",
+        "no-const-assign": "off",
+        "no-constant-condition": "off",
+        "no-control-regex": "off",
+        "no-delete-var": "off",
+        "no-dupe-args": "off",
+        "no-dupe-class-members": "off",
+        "no-duplicate-case": "off",
+        "no-empty-pattern": "off",
+        "no-func-assign": "off",
+        "no-import-assign": "off",
+        "no-inner-declarations": "off",
+        "no-new-symbol": "off",
+        "no-obj-calls": "off",
+        "no-octal": "off",
+        "no-redeclare": "off",
+        "no-setter-return": "off",
+        "no-sparse-arrays": "off",
+        "no-this-before-super": "off",
+        "no-undef": "off",
+        "no-unreachable": "error",
+        "no-unused-vars": "off",
+        "no-var": "error",
+        "no-with": "off",
+        "react/display-name": "off",
+        "react/jsx-no-duplicate-props": "off",
+        "react/jsx-no-undef": "off",
+        "react/jsx-uses-react": "off",
+        "react/jsx-uses-vars": "off",
+        "react/no-children-prop": "off",
+        "react/no-direct-mutation-state": "off",
+        "react/no-unescaped-entities": "off",
+        "react/no-unknown-property": "off",
+        "react/prop-types": "off",
+        "react/react-in-jsx-scope": "off",
+        "react/require-render-return": "off",
+        "valid-typeof": "off"
+      }
+    }
+  ],
+  // taken from: https://github.com/yannickcr/eslint-plugin-react#configuration
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
+}
