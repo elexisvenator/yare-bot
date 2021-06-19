@@ -1,4 +1,3 @@
-import { IPositionable } from '../models/positionable';
 export type distance = number;
 export type degrees = number;
 export type radians = number;
@@ -13,17 +12,17 @@ export default abstract class Point {
     return radians / (Math.PI / 180);
   }
 
-  static getDistance(p1: IPositionable, p2: IPositionable): distance {
-    const a = p1.position[0] - p2.position[0];
-    const b = p1.position[1] - p2.position[1];
+  static getDistance(p1: point, p2: point): distance {
+    const a = p1[0] - p2[0];
+    const b = p1[1] - p2[1];
     return Math.sqrt(a * a + b * b);
   }
 
-  static getDirection(p1: IPositionable, p2: IPositionable): degrees {
-    return this.radToDeg(Math.atan2(p2.position[0] - p1.position[0], p2.position[1] - p1.position[1]));
+  static getDirection(p1: point, p2: point): degrees {
+    return this.radToDeg(Math.atan2(p2[0] - p1[0], p2[1] - p1[1]));
   }
 
-  static getVector(p1: IPositionable, p2: IPositionable): vector {
+  static getVector(p1: point, p2: point): vector {
     return {
       distance: this.getDistance(p1, p2),
       direction: this.getDirection(p1, p2),
@@ -66,9 +65,9 @@ export default abstract class Point {
     };
   }
 
-  static getPointFromPositionAtVector(p: IPositionable, v: vector): point {
+  static getPointFromPositionAtVector(position: point, v: vector): point {
     const vectorPosition = Point.vectorToPoint(v);
-    return [p.position[0] + vectorPosition[0], p.position[1] + vectorPosition[1]];
+    return [position[0] + vectorPosition[0], position[1] + vectorPosition[1]];
   }
 
   static vectorToPoint(v: vector): point {
