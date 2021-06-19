@@ -7,6 +7,7 @@ export const PassiveBot: IBotConstructor = class PassiveBot implements IBot {
     gameState.operations.push(new HomeBaseHarvestOperation(gameState));
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   step(gameState: IGameState): void {
     // do nothing;
   }

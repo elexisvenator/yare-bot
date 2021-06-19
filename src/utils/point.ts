@@ -71,6 +71,6 @@ export default abstract class Point {
   }
 
   static vectorToPoint(v: vector): point {
-    return [v.distance * Math.cos(this.degToRad(v.direction)), v.distance * Math.sin(this.degToRad(v.direction))];
+    return [v.distance * Math.sin(this.degToRad(v.direction)), v.distance * Math.cos(this.degToRad(v.direction))];
   }
 }

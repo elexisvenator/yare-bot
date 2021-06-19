@@ -1,4 +1,4 @@
-import { point } from '../utils/point';
+import Point, { point } from '../utils/point';
 import { IFriendly } from './core';
 import { IGameState } from './game-state';
 import { IMinionMemory } from './memory';
@@ -28,10 +28,14 @@ export class Minion extends SpiritBase implements IFriendly {
     this.entity.move(p);
   }
 
-  public charge(friendly: IFriendly): void {
+  public charge(friendly: IFriendly): boolean {
     // TODO: only energize if in range
-    this.isEnergizingSomething = true;
-    this.entity.energize(friendly.entity);
+    if (Point.getDistance(this.position, friendly.position) <= ENERGIZE_RANGE) {
+      this.isEnergizingSomething = true;
+      this.entity.energize(friendly.entity);
+      return true;
+    }
+    return false;
   }
 
   public runFinalSteps(): void {

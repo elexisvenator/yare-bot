@@ -142,7 +142,12 @@ class HarvestPowerSubOperation extends OperationBase implements ISubOperation {
   constructor(parent: HomeBaseHarvestOperation, gameState: IGameState, ...minions: Minion[]) {
     super();
     this.parentOperation = parent;
-    this.harvestPoint = [...gameState.homeStar.position];
+    const harvestPath = Point.getVector(gameState.homeStar.position, gameState.homeBase.position);
+    const harvestVector = Point.setDistance(
+      harvestPath,
+      harvestPath.distance < 2 * ENERGIZE_RANGE ? harvestPath.distance / 2 : ENERGIZE_RANGE
+    );
+    this.harvestPoint = [...Point.getPointFromPositionAtVector(gameState.homeStar.position, harvestVector)];
     this.assignMinion(gameState, ...minions);
   }
 
@@ -186,7 +191,12 @@ class DeliverToBaseSubOperation extends OperationBase implements ISubOperation {
   constructor(parent: HomeBaseHarvestOperation, gameState: IGameState, ...minions: Minion[]) {
     super();
     this.parentOperation = parent;
-    this.deliveryPoint = [...gameState.homeBase.position];
+    const deliveryPath = Point.getVector(gameState.homeBase.position, gameState.homeStar.position);
+    const deliveryVector = Point.setDistance(
+      deliveryPath,
+      deliveryPath.distance < 2 * ENERGIZE_RANGE ? deliveryPath.distance / 2 : ENERGIZE_RANGE
+    );
+    this.deliveryPoint = [...Point.getPointFromPositionAtVector(gameState.homeBase.position, deliveryVector)];
     this.assignMinion(gameState, ...minions);
   }
 

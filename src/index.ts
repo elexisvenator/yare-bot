@@ -10,6 +10,7 @@ import { IGameState } from './models/game-state';
 //RenderService.circle(my_spirits[0], 100);
 
 // for logging data with recursive references
+// eslint-disable-next-line  @typescript-eslint/no-unused-vars
 function safeStringify(obj: unknown, indent = 2): string {
   const cache: unknown[] = [];
   const retVal = JSON.stringify(
