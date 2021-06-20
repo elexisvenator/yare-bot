@@ -1,3 +1,7 @@
+import { IPositionable } from '../models/positionable';
+
+type NonEmptyArray<T> = [T, ...T[]];
+
 export type distance = number;
 export type degrees = number;
 export type radians = number;
@@ -65,12 +69,20 @@ export default abstract class Point {
     };
   }
 
-  static getPointFromPositionAtVector(position: point, v: vector): point {
+  static getPointFromPointAtVector(p: point, v: vector): point {
     const vectorPosition = Point.vectorToPoint(v);
-    return [position[0] + vectorPosition[0], position[1] + vectorPosition[1]];
+    return [p[0] + vectorPosition[0], p[1] + vectorPosition[1]];
   }
 
   static vectorToPoint(v: vector): point {
     return [v.distance * Math.sin(this.degToRad(v.direction)), v.distance * Math.cos(this.degToRad(v.direction))];
+  }
+
+  static getNearestPosition<T extends IPositionable>(p: point, ...positions: NonEmptyArray<T>): T {
+    if (positions.length == 1) {
+      return positions[0];
+    }
+
+    return positions.sort((a, b) => this.getDistance(p, a.position) - this.getDistance(p, b.position))[0];
   }
 }

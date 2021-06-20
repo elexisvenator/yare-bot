@@ -3,8 +3,7 @@
  */
 
 import { PassiveBot } from './bots/passive-bot';
-import { GameState } from './game-state';
-import { IGameState } from './models/game-state';
+import { IGameState, GameState } from './models/game-state';
 
 //import RenderService from 'yare-code-sync/client/RenderService'
 //RenderService.circle(my_spirits[0], 100);
@@ -97,37 +96,34 @@ function reassignSurplusMinions(state: IGameState) {
   assignAllUnassignedMinions(state);
 }
 
-try {
-  // gamestate converts the game data into a more workable dataset
-  const state = new GameState(PassiveBot);
+// gamestate converts the game data into a more workable dataset
+const state = new GameState(PassiveBot);
 
-  // 1. handle all dead minions
-  for (const deadMinion of state.deadMinions) {
-    if (deadMinion.operation == null) {
-      continue;
-    }
-    deadMinion.operation.handleDeadMinion(state, deadMinion);
+// 1. handle all dead minions
+for (const deadMinion of state.deadMinions) {
+  if (deadMinion.operation == null) {
+    continue;
   }
+  deadMinion.operation.handleDeadMinion(state, deadMinion);
+}
 
-  // 2. run bot step
-  state.bot.step(state);
+// 2. run bot step
+state.bot.step(state);
 
-  // 3. assign all unassigned minions
-  assignAllUnassignedMinions(state);
+// 3. assign all unassigned minions
+assignAllUnassignedMinions(state);
 
-  // 4. reassign surplus minions
-  reassignSurplusMinions(state);
+// 4. reassign surplus minions
+reassignSurplusMinions(state);
 
-  // 5. run all operation steps
-  for (const op of state.operations) {
-    op.step(state);
-  }
+// 5. run all operation steps
+for (const op of state.operations.sort((a, b) =>
+  a.priority == b.priority ? (b.active ? 1 : 0) - (a.active ? 1 : 0) : a.priority - b.priority
+)) {
+  op.step(state);
+}
 
-  // 6. run minion finalize
-  for (const minion of state.aliveMinions) {
-    minion.runFinalSteps();
-  }
-} catch (error) {
-  const err = error as Error;
-  throw new Error(`${err.message} ${err.stack}`);
+// 6. run minion finalize
+for (const minion of state.aliveMinions) {
+  minion.runFinalSteps(state);
 }

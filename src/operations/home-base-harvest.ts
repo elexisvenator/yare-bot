@@ -1,10 +1,9 @@
 import { IGameState } from '../models/game-state';
 import { Minion } from '../models/minion';
-import { IOperation, ISubOperation, OperationBase, OperationStatus } from '../models/operation';
+import { IOperation, ISubOperation, ITransferrable, OperationBase, OperationStatus } from '../models/operation';
 import Point, { point } from '../utils/point';
 
 export class HomeBaseHarvestOperation extends OperationBase implements IOperation {
-  public readonly subOperations: ISubOperation[];
   public readonly harvestOperation: HarvestPowerSubOperation;
   public readonly deliveryOperation: DeliverToBaseSubOperation;
   private minimumHarvesters: number;
@@ -21,7 +20,6 @@ export class HomeBaseHarvestOperation extends OperationBase implements IOperatio
     this.minimumHarvesters = 0;
     this.harvestOperation = new HarvestPowerSubOperation(this, gameState);
     this.deliveryOperation = new DeliverToBaseSubOperation(this, gameState);
-    this.subOperations = [this.harvestOperation, this.deliveryOperation];
   }
 
   public get minionDemand(): number {
@@ -29,8 +27,13 @@ export class HomeBaseHarvestOperation extends OperationBase implements IOperatio
     return this.minimumHarvesters - allHarvesters.length;
   }
 
+  public get subOperations(): ISubOperation[] {
+    return [this.harvestOperation, this.deliveryOperation];
+  }
+
   public step(gameState: IGameState): OperationStatus {
     // TODO: Base this on the cost of a new harvestor
+    // TODO: Factor in the maximum efficiency of the star
     this.minimumHarvesters = 10;
 
     this.harvestOperation.step(gameState);
@@ -135,7 +138,7 @@ export class HomeBaseHarvestOperation extends OperationBase implements IOperatio
   }
 }
 
-class HarvestPowerSubOperation extends OperationBase implements ISubOperation {
+class HarvestPowerSubOperation extends OperationBase implements ISubOperation, ITransferrable {
   public readonly parentOperation: HomeBaseHarvestOperation;
   public harvestPoint: point;
 
@@ -147,7 +150,7 @@ class HarvestPowerSubOperation extends OperationBase implements ISubOperation {
       harvestPath,
       harvestPath.distance < 2 * ENERGIZE_RANGE ? harvestPath.distance / 2 : ENERGIZE_RANGE
     );
-    this.harvestPoint = [...Point.getPointFromPositionAtVector(gameState.homeStar.position, harvestVector)];
+    this.harvestPoint = [...Point.getPointFromPointAtVector(gameState.homeStar.position, harvestVector)];
     this.assignMinion(gameState, ...minions);
   }
 
@@ -184,7 +187,7 @@ class HarvestPowerSubOperation extends OperationBase implements ISubOperation {
   }
 }
 
-class DeliverToBaseSubOperation extends OperationBase implements ISubOperation {
+class DeliverToBaseSubOperation extends OperationBase implements ISubOperation, ITransferrable {
   public readonly parentOperation: HomeBaseHarvestOperation;
   public deliveryPoint: point;
 
@@ -196,7 +199,7 @@ class DeliverToBaseSubOperation extends OperationBase implements ISubOperation {
       deliveryPath,
       deliveryPath.distance < 2 * ENERGIZE_RANGE ? deliveryPath.distance / 2 : ENERGIZE_RANGE
     );
-    this.deliveryPoint = [...Point.getPointFromPositionAtVector(gameState.homeBase.position, deliveryVector)];
+    this.deliveryPoint = [...Point.getPointFromPointAtVector(gameState.homeBase.position, deliveryVector)];
     this.assignMinion(gameState, ...minions);
   }
 
@@ -205,24 +208,61 @@ class DeliverToBaseSubOperation extends OperationBase implements ISubOperation {
   }
 
   public step(gameState: IGameState): OperationStatus {
+    const conduits: { readonly minion: Minion; charges: number }[] = [];
+    const notChargingBase: Minion[] = [];
     for (const minion of this.assignedMinions.map((id) => gameState.getMinion(id))) {
+      // become harvester if empty
       if (minion.entity.energy == 0) {
         this.parentOperation.harvestOperation.transfer(gameState, minion);
         continue;
       }
 
-      this.minionStep(gameState, minion);
+      // head to base and charge
+      minion.moveToPoint(this.deliveryPoint);
+      const canChargeBase = minion.charge(gameState.homeBase);
+
+      // can we daisy-chain charge the base?
+      if (canChargeBase && minion.entity.energy < minion.entity.energy_capacity) {
+        conduits.push({ minion: minion, charges: minion.entity.energy_capacity - minion.entity.energy });
+      }
+      if (!canChargeBase) {
+        notChargingBase.push(minion);
+      }
+    }
+
+    // sort by those closest to the star first
+    for (const minion of notChargingBase.sort(
+      (a, b) =>
+        Point.getDistance(a.position, gameState.homeStar.position) -
+        Point.getDistance(b.position, gameState.homeStar.position)
+    )) {
+      const conduitIndex = conduits.findIndex(
+        (c) =>
+          Point.getDistance(minion.position, c.minion.position) <= ENERGIZE_RANGE && c.charges >= minion.entity.size
+      );
+
+      if (conduitIndex < 0) {
+        // not in range of any conduits
+        continue;
+      }
+
+      const conduit = conduits[conduitIndex];
+      if (minion.charge(conduit.minion)) {
+        // stop moving by moving towards self
+        minion.moveTowards(minion);
+        // reduce remaining charges on conduit
+        conduit.charges -= minion.entity.size;
+        if (conduit.charges <= 0) {
+          conduits.splice(conduitIndex, 1);
+        }
+      }
     }
 
     return 'active';
   }
 
-  public transfer(gameState: IGameState, minion: Minion) {
+  public transfer(gameState: IGameState, minion: Minion): void {
     this.assignMinion(gameState, minion);
-    this.minionStep(gameState, minion);
-  }
-
-  private minionStep(gameState: IGameState, minion: Minion) {
     // deliver energy to homebase
     minion.moveToPoint(this.deliveryPoint);
     minion.charge(gameState.homeBase);

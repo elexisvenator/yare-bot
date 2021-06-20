@@ -25,14 +25,14 @@ export interface IOperationBase {
    * @returns The operation's status post-step. Either active, inactive - meaning not utilising any minions, or complete - which means this operation can be removed.
    * @memberof IOperation
    */
-  step: (gameState: IGameState) => OperationStatus;
+  step(gameState: IGameState): OperationStatus;
 
   /**
    * Return all minion ids assigned to this operation and child operations.
    * @returns {string[]} List of minion ids.
    * @memberof IOperationBase
    */
-  listAllAssignedMinions: () => string[];
+  listAllAssignedMinions(): string[];
 
   /**
    * Force-unassign this minion from this operation
@@ -40,7 +40,7 @@ export interface IOperationBase {
    * @param {Minion} minion The mininon being unassigned
    * @memberof IOperation
    */
-  poachMinion: (gameState: IGameState, minion: Minion) => void;
+  poachMinion(gameState: IGameState, minion: Minion): void;
 
   /**
    * Notifies that a minion assigned to this operation is dead.
@@ -50,7 +50,7 @@ export interface IOperationBase {
    * @param {Minion} minion The deceased minion.
    * @memberof IOperationBase
    */
-  handleDeadMinion: (gameState: IGameState, minion: Minion) => void;
+  handleDeadMinion(gameState: IGameState, minion: Minion): void;
 }
 
 export interface IOperation extends IOperationBase {
@@ -99,7 +99,7 @@ export interface IOperation extends IOperationBase {
    * @returns {Minion[]} The list of minions that are now unassigned.
    * @memberof IOperation
    */
-  suspendOperation: (gameState: IGameState) => Minion[];
+  suspendOperation(gameState: IGameState): Minion[];
 
   /**
    * Operation can pick from a selection of minons to assign to itself.
@@ -109,7 +109,7 @@ export interface IOperation extends IOperationBase {
    * @returns {Minion[]} The accepted minions, if any.
    * @memberof IOperation
    */
-  tryAssignMinionsFromSelection: (gameState: IGameState, minions: Minion[], max: number) => Minion[];
+  tryAssignMinionsFromSelection(gameState: IGameState, minions: Minion[], max: number): Minion[];
 
   /**
    * Request that the operation release a minion.
@@ -117,7 +117,7 @@ export interface IOperation extends IOperationBase {
    * @returns {Minion | null} The mininon being released, or none if no minion could be released.
    * @memberof IOperation
    */
-  tryUnassignMinion: (gameState: IGameState) => Minion | null;
+  tryUnassignMinion(gameState: IGameState): Minion | null;
 }
 
 export interface ISubOperation extends IOperationBase {
@@ -127,6 +127,10 @@ export interface ISubOperation extends IOperationBase {
    * @memberof ISubOperation
    */
   readonly parentOperation: IOperation;
+}
+
+export interface ITransferrable extends IOperationBase {
+  transfer(gameState: IGameState, minion: Minion): void;
 }
 
 export abstract class OperationBase implements IOperationBase {
