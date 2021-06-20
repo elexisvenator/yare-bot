@@ -61,7 +61,6 @@ export class GameState implements IGameState {
           // default minion state
           this.memory.minions[s.id] = {
             allocatedTo: null,
-            lastCharge: null,
           };
         }
 
