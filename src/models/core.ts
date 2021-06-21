@@ -19,13 +19,13 @@ export interface ISpirit extends IEntity, IPositionable, IShape {
 }
 
 export interface IFactioned extends IEnergizable {
-  readonly friendly: boolean;
+  readonly isFriendly: boolean;
 }
 
 export interface IFriendly extends IFactioned {
-  readonly friendly: true;
+  readonly isFriendly: true;
 }
 
 export interface IHostile extends IFactioned {
-  readonly friendly: false;
+  readonly isFriendly: false;
 }

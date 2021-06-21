@@ -2,8 +2,11 @@
  * This file is the entry point for your bot.
  */
 
+import { firstBy } from 'thenby';
 import { PassiveBot } from './bots/passive-bot';
 import { IGameState, GameState } from './models/game-state';
+import { IOperation } from './models/operation';
+import { Logging } from './utils/logging';
 
 //import RenderService from 'yare-code-sync/client/RenderService'
 //RenderService.circle(my_spirits[0], 100);
@@ -26,38 +29,27 @@ function safeStringify(obj: unknown, indent = 2): string {
 }
 
 function assignAllUnassignedMinions(state: IGameState) {
-  for (const op of state.operations.sort((a, b) => a.priority - b.priority)) {
+  // order by highest priority
+  for (const op of state.operations
+    .filter((op) => op.active && op.minionDemand > 0)
+    .sort(firstBy((op) => op.priority, 'desc'))) {
     const unassigned = state.unassignedMinions;
     if (unassigned.length == 0) {
       // this function is complete
       return;
-    }
-
-    if (!op.active) {
-      continue;
-    }
-
-    if (op.minionDemand <= 0) {
-      continue;
     }
 
     op.tryAssignMinionsFromSelection(state, unassigned, op.minionDemand);
   }
 
   // handle the leftovers
-  for (const op of state.operations.sort((a, b) => a.priority - b.priority)) {
+  for (const op of state.operations
+    .filter((op) => op.active && op.unlimitedDemand)
+    .sort(firstBy((op: IOperation) => op.minionDemand < 0).thenBy((op) => op.priority, 'desc'))) {
     const unassigned = state.unassignedMinions;
     if (unassigned.length == 0) {
       // this function is complete
       return;
-    }
-
-    if (!op.active) {
-      continue;
-    }
-
-    if (!op.unlimitedDemand) {
-      continue;
     }
 
     op.tryAssignMinionsFromSelection(state, unassigned, unassigned.length);
@@ -82,7 +74,7 @@ function reassignSurplusMinions(state: IGameState) {
   const supplyToTake = Math.min(demand, surplus);
   // unassign as many as needed
   // lowest to highest priority
-  for (const op of state.operations.sort((a, b) => b.priority - a.priority)) {
+  for (const op of state.operations.sort(firstBy((op) => op.priority, 'desc'))) {
     while (op.minionDemand < 0 && state.unassignedMinions.length < supplyToTake) {
       const taken = op.tryUnassignMinion(state);
       if (taken == null) {
@@ -117,9 +109,7 @@ assignAllUnassignedMinions(state);
 reassignSurplusMinions(state);
 
 // 5. run all operation steps
-for (const op of state.operations.sort((a, b) =>
-  a.priority == b.priority ? (b.active ? 1 : 0) - (a.active ? 1 : 0) : a.priority - b.priority
-)) {
+for (const op of state.operations.sort(firstBy((op: IOperation) => op.active).thenBy((op) => op.priority, 'desc'))) {
   op.step(state);
 }
 
@@ -127,3 +117,6 @@ for (const op of state.operations.sort((a, b) =>
 for (const minion of state.aliveMinions) {
   minion.runFinalSteps(state);
 }
+
+console.log(`Clock: ${state.clock}`);
+Logging.logOperations(state);

@@ -2,7 +2,7 @@ import { IFactioned, IFriendly, IHostile, IShape } from './core';
 import { IGameState } from './game-state';
 
 export class FriendlyBase implements IFriendly, IShape {
-  public friendly: true = true;
+  public isFriendly: true = true;
   constructor(public readonly entity: Base) {}
 
   public get id(): string {
@@ -41,7 +41,7 @@ export class FriendlyBase implements IFriendly, IShape {
 }
 
 export class HostileBase implements IHostile, IShape {
-  public friendly: false = false;
+  public isFriendly: false = false;
   constructor(public readonly entity: Base) {}
 
   public get id(): string {
@@ -71,7 +71,7 @@ export class NeutralOutpost implements IFactioned {
     return this.entity.id;
   }
 
-  public get friendly(): boolean {
+  public get isFriendly(): boolean {
     return this.entity.control == this_player_id;
   }
 

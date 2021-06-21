@@ -55,6 +55,11 @@ export interface IOperationBase {
 
 export interface IOperation extends IOperationBase {
   /**
+   * Description of operation, should be 20 characters or less.
+   */
+  readonly name: string;
+
+  /**
    * Returns whether an operation is active or not.
    * An inactive operation will not have their demand satisified.
    * If there is a need to take minions then taking from this operation will be prioritised over another operation of equal priority.
@@ -135,7 +140,7 @@ export interface ITransferrable extends IOperationBase {
 
 export abstract class OperationBase implements IOperationBase {
   abstract readonly subOperations: ISubOperation[];
-  private readonly _assignedMinions: string[] = [];
+  private readonly _assignedMinions: Set<string> = new Set<string>();
 
   public get assignedMinions(): string[] {
     return [...this._assignedMinions];
@@ -157,11 +162,7 @@ export abstract class OperationBase implements IOperationBase {
         minion.unassign(gameState);
       }
 
-      const index = this._assignedMinions.indexOf(minion.id);
-      if (index >= 0) continue;
-
-      console.log(`Assigning minion ${minion.id} to operation ${this.constructor.name}`);
-      this._assignedMinions.push(minion.id);
+      this._assignedMinions.add(minion.id);
       minion.assign(gameState, this);
     }
   }
@@ -174,9 +175,8 @@ export abstract class OperationBase implements IOperationBase {
    * @memberof OperationBase
    */
   protected unassignMinion(minion: Minion): boolean {
-    const index = this._assignedMinions.indexOf(minion.id);
-    if (index < 0) return false;
-    this._assignedMinions.splice(index, 1);
+    if (!this._assignedMinions.has(minion.id)) return false;
+    this._assignedMinions.delete(minion.id);
     return true;
   }
 
@@ -185,5 +185,7 @@ export abstract class OperationBase implements IOperationBase {
   }
 
   public abstract step(gameState: IGameState): OperationStatus;
-  public abstract handleDeadMinion(gameState: IGameState, minion: Minion): void;
+  public handleDeadMinion(gameState: IGameState, minion: Minion): void {
+    this.unassignMinion(minion);
+  }
 }

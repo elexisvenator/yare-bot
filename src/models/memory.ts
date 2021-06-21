@@ -3,6 +3,9 @@ import { IOperation, IOperationBase } from './operation';
 
 export interface IMinionMemory {
   allocatedTo: IOperationBase | null;
+  selfDefence?: {
+    initialPosition: Position;
+  };
 }
 
 export type GameMemory = {

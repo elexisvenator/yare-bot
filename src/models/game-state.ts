@@ -1,6 +1,6 @@
 import { FriendlyBase, HostileBase, NeutralOutpost } from './bases';
 import { IBot, IBotConstructor } from './bot';
-import { ISpirit } from './core';
+import { IHostile, ISpirit } from './core';
 import { Hostile } from './hostile';
 import { GameMemory } from './memory';
 import { Minion } from './minion';
@@ -18,6 +18,7 @@ export interface IGameState {
   readonly hostileBase: HostileBase;
   readonly outpost: NeutralOutpost;
 
+  readonly stars: GameStar[];
   readonly homeStar: GameStar;
   readonly hostileStar: GameStar;
   readonly neutralStar: GameStar;
@@ -26,8 +27,9 @@ export interface IGameState {
   readonly bot: IBot;
   readonly operations: IOperation[];
 
-  getMinion: (id: string) => Minion;
-  getHostile: (id: string) => Hostile;
+  getMinion(id: string): Minion;
+  getHostile(id: string): Hostile;
+  getEnemy(id: string): IHostile;
 }
 
 export class GameState implements IGameState {
@@ -41,6 +43,7 @@ export class GameState implements IGameState {
   public readonly hostileBase: HostileBase = new HostileBase(enemy_base);
   public readonly outpost: NeutralOutpost = new NeutralOutpost(outpost_mdo);
 
+  public readonly stars: GameStar[];
   public readonly homeStar: GameStar;
   public readonly hostileStar: GameStar;
   public readonly neutralStar: GameStar;
@@ -75,9 +78,11 @@ export class GameState implements IGameState {
     this.hostiles = Object.values(this.spirits)
       .filter((s) => s instanceof Hostile)
       .map((s) => s as Hostile);
+
     this.homeStar = new GameStar(this, star_zxq);
     this.hostileStar = new GameStar(this, star_a1c);
     this.neutralStar = new GameStar(this, star_p89, 100);
+    this.stars = [this.homeStar, this.hostileStar, this.neutralStar];
 
     // initialise bot
     this.memory.bot = this.memory.bot || new botClass(this);
@@ -113,5 +118,16 @@ export class GameState implements IGameState {
 
   public getHostile(id: string): Hostile {
     return this.spirits[id] as Hostile;
+  }
+
+  public getEnemy(id: string): IHostile {
+    switch (id) {
+      case this.hostileBase.id:
+        return this.hostileBase;
+      case this.outpost.id:
+        return this.outpost as IHostile;
+      default:
+        return this.getHostile(id);
+    }
   }
 }
